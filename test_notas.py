@@ -1,5 +1,7 @@
 from notas import calcular_media, situacao
 
+#• assert significa "garanto que isto é verdade". Se a comparação der falso, o teste falha.
+
 
 def test_media_simples():
     assert calcular_media(7, 8, 9) == 8.0
