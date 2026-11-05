@@ -2,20 +2,46 @@ name: Pipeline do Boletim
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   testes:
     runs-on: ubuntu-latest
     steps:
       - name: Baixar o código
         uses: actions/checkout@v5
-
       - name: Instalar o Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-
       - name: Instalar o pytest
         run: pip install pytest
-
       - name: Rodar os testes
         run: pytest -v
+
+  deploy:
+    needs: testes
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicar.outputs.page_url }}
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v5
+      - name: Instalar o Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Gerar o site
+        run: python gerar_site.py
+      - name: Empacotar o site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - name: Publicar no GitHub Pages
+        id: publicar
+        uses: actions/deploy-pages@v4
